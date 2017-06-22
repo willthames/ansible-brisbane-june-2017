@@ -93,7 +93,15 @@ library = ./library</code></pre>
 </section>
 <section id="ansible-approach" class="slide level1">
 <h1>Ansible approach</h1>
-<p>For e.g. promotion, use <code>elb_target_group_facts</code> to find the ASG in the default target group, and then update that ASG to be in the old target group using ec2_asg module. Repeat for moving the new target group ASG to the default target group</p>
+<ul>
+<li>Validate the state that you expect</li>
+<li>For e.g. promotion:
+<ul>
+<li>Determine the ASG populating the default group (using <code>elb_target_group_facts</code>)</li>
+<li>Change that ASG to populate the old group</li>
+<li>Change the ASG populating the new group to populate the default group.</li>
+</ul></li>
+</ul>
 </section>
     </div>
   </div>

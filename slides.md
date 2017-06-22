@@ -68,8 +68,9 @@ in `ansible.cfg`
 
 # Ansible approach
 
-For e.g. promotion, use `elb_target_group_facts` to find the ASG
-in the default target group, and then update that ASG to be in the
-old target group using ec2_asg module. Repeat for moving the new
-target group ASG to the default target group
-
+* Validate the state that you expect
+* For e.g. promotion:
+    * Determine the ASG populating the default group (using
+      `elb_target_group_facts`)
+    * Change that ASG to populate the old group
+    * Change the ASG populating the new group to populate the default group.
