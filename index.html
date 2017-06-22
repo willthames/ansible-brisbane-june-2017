@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="author" content="Will Thames" />
+  <meta name="dcterms.date" content="2017-06-22" />
+  <title>Using Ansible for hot/cold deploys</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <link rel="stylesheet" href="reveal.js/css/reveal.css"/>
+  <link rel="stylesheet" href="overrides.css"/>
+  <style type="text/css">code{white-space: pre;}</style>
+  <link rel="stylesheet" href="reveal.js/css/theme/white.css" id="theme">
+  <!-- If the query includes 'print-pdf', include the PDF print sheet -->
+  <script>
+    if( window.location.search.match( /print-pdf/gi ) ) {
+      var link = document.createElement( 'link' );
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = 'reveal.js/css/print/pdf.css';
+      document.getElementsByTagName( 'head' )[0].appendChild( link );
+    }
+  </script>
+  <!--[if lt IE 9]>
+  <script src="reveal.js/lib/js/html5shiv.js"></script>
+  <![endif]-->
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+<section>
+    <h1 class="title">Using Ansible for hot/cold deploys</h1>
+    <h2 class="author">Will Thames</h2>
+    <h3 class="date">22 June 2017</h3>
+</section>
+
+<section id="new-ansible-modules" class="slide level1">
+<h1>New Ansible modules</h1>
+<ul>
+<li><code>elb_application_lb</code> <a href="https://github.com/ansible/ansible/pull/19491">#19491</a></li>
+<li><code>elb_target_group</code> <a href="https://github.com/ansible/ansible/pull/19492">#19492</a></li>
+<li><code>elb_target_group_facts</code> <a href="https://github.com/ansible/ansible/pull/24583">#24583</a></li>
+</ul>
+</section>
+<section id="updated-existing-modules" class="slide level1">
+<h1>Updated existing modules</h1>
+<ul>
+<li><code>ec2_asg</code> has a bunch of fixes in devel (e.g. allowing target groups to be removed from ASGs!)</li>
+</ul>
+</section>
+<section id="using-them-now" class="slide level1">
+<h1>Using them now</h1>
+<p>All will be in Ansible 2.4. If you don't want to run devel ansible, you can always just copy the modules into a directory (e.g. <code>library</code>) and set</p>
+<pre><code>[defaults]
+library = ./library</code></pre>
+<p>in <code>ansible.cfg</code></p>
+</section>
+<section id="what-are-albs" class="slide level1">
+<h1>What are ALBs</h1>
+<ul>
+<li>Layer 7 routing</li>
+<li>Rules are used to match host or path and send to a target group</li>
+<li>Target groups can be populated by ASGs (or just directly by instances)</li>
+<li>One ASG can populate multiple TGs</li>
+</ul>
+</section>
+<section id="initial-state" class="slide level1">
+<h1>Initial state</h1>
+<figure>
+<img src="images/alb_step1.png" alt="Before upgrade" /><figcaption>Before upgrade</figcaption>
+</figure>
+</section>
+<section id="deploy" class="slide level1">
+<h1>Deploy</h1>
+<figure>
+<img src="images/alb_step2.png" alt="Deploy new instances" /><figcaption>Deploy new instances</figcaption>
+</figure>
+</section>
+<section id="promote" class="slide level1">
+<h1>Promote</h1>
+<figure>
+<img src="images/alb_step3.png" alt="Upgrade" /><figcaption>Upgrade</figcaption>
+</figure>
+</section>
+<section id="finalise" class="slide level1">
+<h1>Finalise</h1>
+<figure>
+<img src="images/alb_step4.png" alt="Tidy up" /><figcaption>Tidy up</figcaption>
+</figure>
+</section>
+<section id="ansible-approach" class="slide level1">
+<h1>Ansible approach</h1>
+<p>For e.g. promotion, use <code>elb_target_group_facts</code> to find the ASG in the default target group, and then update that ASG to be in the old target group using ec2_asg module. Repeat for moving the new target group ASG to the default target group</p>
+</section>
+    </div>
+  </div>
+
+
+  <script src="reveal.js/lib/js/head.min.js"></script>
+  <script src="reveal.js/js/reveal.js"></script>
+
+  <script>
+
+      // Full list of configuration options available here:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+        controls: true,         // Display controls in the bottom right corner
+        progress: true,         // Display a presentation progress bar
+        history: true,          // Push each slide change to the browser history
+        center: false,                       // Vertical centering of slides
+        maxScale: 1.5,                  // Bounds for smallest/largest possible content scale
+        slideNumber: false,                // Display the page number of the current slide
+        theme: 'white', // available themes are in /css/theme
+        transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
+
+        // Optional libraries used to extend on reveal.js
+        dependencies: [
+          { src: 'reveal.js/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+          { src: 'reveal.js/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+          { src: 'reveal.js/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } },
+//          { src: 'reveal.js/plugin/search/search.js', async: true, condition: function() { return !!document.body.classList; }, }
+//          { src: 'reveal.js/plugin/remotes/remotes.js', async: true, condition: function() { return !!document.body.classList; } }
+]});
+    </script>
+    </body>
+</html>
